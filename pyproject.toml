@@ -1,0 +1,44 @@
+[project]
+name = "chronostore"
+version = "0.1.0"
+description = "The simplest binary time series store. No DB. No Server. Just mmap. Built for append-only local data."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Mickael Burguet", email = "your.email@example.com" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: System :: Filesystems",
+    "Topic :: Scientific/Engineering :: Information Analysis"
+]
+
+dependencies = [
+    "numpy>=1.24.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/rundef/chronostore"
+Repository = "https://github.com/rundef/chronostore"
+Issues = "https://github.com/rundef/chronostore/issues"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["chronostore", "chronostore.core"]
+
+[project.scripts]
+# Uncomment and implement later when you add a CLI
+# chrono = "chronostore.cli:main"
+
