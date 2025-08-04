@@ -1,4 +1,4 @@
-from chronostore.core import Partitioner
+from chronostore.backend.flatfile.partitioner import Partitioner
 
 def test_partition_path(tmp_path):
     p = Partitioner(tmp_path)

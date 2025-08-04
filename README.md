@@ -4,15 +4,8 @@
 [![CI](https://github.com/rundef/chronostore/actions/workflows/ci.yml/badge.svg)](https://github.com/rundef/chronostore/actions/workflows/ci.yml)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/chronostore)](https://pypistats.org/packages/chronostore)
 
-**Chronostore**: The simplest binary time series store. No DB. No Server. Just mmap. Built for append-only local data.
-
----
-
-Chronostore saves **all columns in single daily binary files** using your schema, with memory-mapped reads for fast, zero-copy access via NumPy.
-
-**Why?** Chronostore is perfect for local, append-only time series workloads where you want full control over schema and layout without any server or database dependency.
-
----
+**Chronostore** is a fast, binary time series storage engine for local workloads.
+No server. No database. Just append-only daily files backed by memory-mapping or LMDB, with zero-copy NumPy reads and schema control.
 
 ## 📦 Installation
 
@@ -22,14 +15,13 @@ pip install chronostore
 
 ## ⚙️ Features
 
-- 📁 Single binary file per day (record-packed format)
-- 🧠 Memory-mapped reads (no full file load)
-- 📆 Date-partitioned folders
-- ⚡ Vectorized filtering with NumPy
-- ✅ User-defined schema for flexibility
-- 🔒 No dependencies or servers — just your filesystem
-
----
+- 🔌 **Pandas-compatible**: Read and write directly from DataFrames or lists of dicts
+- ⚡ **Blazing-fast reads**: Zero-copy access via NumPy with optional memory-mapping or LMDB backend
+- 🧠 **Schema-defined layout**: Define your own typed schema for precise control over storage format
+- 📅 **Daily partitioning**: Each day's data is saved to a single compact binary file for fast lookups
+- 🔄 **Append-only design**: Ideal for logs, metrics, sensor data, or financial data
+- 🧱 **Pluggable backends**: Choose between FlatFile (mmap) and LMDB
+- 🚫 **No server or database required**: Pure Python. Runs anywhere (no setup, no infra)
 
 ## ⚠️ Limitations
 
@@ -37,9 +29,7 @@ pip install chronostore
 - No built-in indexing or compression
 - Best suited for SSD/NVMe; HDD can be slow for large date ranges
 
----
-
-## 📂 Data Layout
+## 📂 Data Layout (flatfile backend)
 
 ```
 data/
@@ -54,18 +44,17 @@ Each `data.bin` is an append-only binary file containing rows packed according t
 
 [The list of format characters is available here.](https://docs.python.org/3/library/struct.html#format-characters)
 
----
-
 ## 🧪 Example Usage
 
 ```python
 from chronostore import TimeSeriesEngine, TableSchema, ColumnSchema
+from chronostore.backend import FlatFileBackend
 
 schema = TableSchema(columns=[
     ColumnSchema("timestamp", "q"),
     ColumnSchema("value", "d"),
 ])
-engine = TimeSeriesEngine("./data_folder", schema)
+engine = TimeSeriesEngine(backend=FlatFileBackend(schema, "./data_folder"))
 engine.append("Sensor1", "2025-06-14", {"timestamp": 1234567890, "value": 42.0})
 engine.flush()
 
@@ -73,8 +62,6 @@ engine.flush()
 recent = engine.read("Sensor1", "2025-06-14", start=-5)
 print(recent)
 ```
-
----
 
 ## 📓 Explore in Notebooks:
 
@@ -85,29 +72,24 @@ Practical examples that mirror real workloads:
 - [Financial tick data storage →](notebooks/financial_tick_data.ipynb)
 - [System logs →](notebooks/logs_events.ipynb)
 
----
-
 ## 🚀 Benchmarks
 
-| Format      | Append (1M rows) | Read (1M rows) | Filter (> threshold) |
-| ----------- | ---------------- | -------------- | -------------------- |
-| CSV         | 5.1s             | 1.8s           | 1.7s                 |
-| HDF5        | 2.3s             | 0.9s           | 0.9s                 |
-| Parquet     | 2.8s             | 1.2s           | 1.1s                 |
-| DuckDB      | 1.9s             | 0.6s           | 0.8s                 |
-| Chronostore | **0.6s**         | **0.2s**       | **0.2s**             |
+| Format                         | Append (10M rows) | Read (10M rows) | Filter (> threshold) | Disk usage  |
+|--------------------------------|-------------------|-----------------|----------------------| ----------- |
+| CSV                            | 58.6s             | 7.84s           | ❌                    | 595MB       |
+| Parquet                        | 2.03s             | 0.44s           | 0.30s                | 277MB       |
+| DuckDB                         | 3.33s             | 0.81s           | 0.42s                | 203MB       |
+| Chronostore (flatfile backend) | 0.43s             | 0.24s           | 0.40s                | 305MB       |
+| Chronostore (lmdb backend)     | 0.58s             | 0.52s           | 0.57s                | 305MB       |
 
-> Benchmarked on 1M rows of 3-column float64 data on a clean AWS m5d.large instance with SSD (Ubuntu, Python 3.11).
+> Benchmarked on 10M rows of 4-column float64 data
 
----
 
 ## 📈 Use Cases
 
 - Time series storage for sensor or IoT data
 - Event logs or telemetry storage
 - Custom domain-specific timeseries archiving
-
----
 
 ## 🧠 Why Not Use a DB?
 
@@ -118,15 +100,13 @@ Chronostore is ideal when:
 - You want total control over layout and access patterns
 - You want to learn low-level I/O, memory mapping, and binary formats
 
-| Feature         | Chronostore | CSV | Parquet | DuckDB  |
-| --------------- | ----------- | --- | ------- | ------- |
-| Server required | ❌           | ❌   | ❌       | ❌       |
-| Schema enforced | ✅           | ❌   | ✅       | ✅       |
-| Compression     | ❌           | ❌   | ✅       | ✅       |
-| Append-only     | ✅           | ✅   | ✅       | ✅       |
-| Memory mapped   | ✅           | ❌   | Partial | Partial |
-
----
+| Feature         | Chronostore | CSV | Parquet    | DuckDB     |
+| --------------- | ----------- | --- | ---------- | ---------- |
+| Server required | ❌          | ❌  | ❌         | ❌         |
+| Schema enforced | ✅          | ❌  | ✅         | ✅         |
+| Compression     | ❌          | ❌  | ✅         | ✅         |
+| Append-only     | ✅          | ✅  | ❌         | ❌         |
+| Memory mapped   | ✅          | ❌  | ❌         | ⚠️ internal only |
 
 ## 📜 License
 

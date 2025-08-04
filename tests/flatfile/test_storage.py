@@ -1,15 +1,17 @@
 import numpy as np
 from chronostore import TableSchema, ColumnSchema
-from chronostore.core import Storage
+from chronostore.backend import FlatFileBackend
+from chronostore.backend.flatfile.storage import Storage
 
 def test_pack_and_read(tmp_path):
     schema = TableSchema(columns=[
         ColumnSchema("timestamp", "q"),
         ColumnSchema("price", "d")
     ])
+    backend = FlatFileBackend(schema, tmp_path)
     storage = Storage(schema)
     row = {"timestamp": 1234567890, "price": 100.5}
-    packed = storage.pack_row(row)
+    packed = backend.pack_row(row)
 
     path = tmp_path / "data.bin"
     with open(path, "wb") as f:

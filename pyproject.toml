@@ -23,7 +23,10 @@ classifiers = [
 ]
 
 dependencies = [
-    "numpy>=1.24.0"
+    "numpy>=1.24.0",
+    "pandas>=1.4.0",
+    "lmdb>=1.4.1",
+    "pattern_kit>=2.0.0"
 ]
 
 [project.urls]
@@ -36,9 +39,4 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["chronostore", "chronostore.core"]
-
-[project.scripts]
-# Uncomment and implement later when you add a CLI
-# chrono = "chronostore.cli:main"
-
+packages = ["chronostore"]

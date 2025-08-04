@@ -1,4 +1,4 @@
-from chronostore.core import Writer
+from chronostore.backend.flatfile.writer import Writer
 
 def test_writer_appends(tmp_path):
     path = tmp_path / "data.bin"
