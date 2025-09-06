@@ -18,7 +18,7 @@ pip install chronostore
 - ⚡ **Fast reads**: Zero-copy access via NumPy with optional memory-mapping or LMDB backend
 - 🧠 **Schema-defined layout**: Define your own typed schema for precise control over storage format
 - 📅 **Daily partitioning**: Each day's data is saved to a single compact binary file for fast lookups
-- 🔄 **Append-only design**: Ideal for logs, metrics, sensor data, or financial data
+- 🔄 **Append-only design**: Ideal for metrics, sensor data, or financial data
 - 🧱 **Pluggable backends**: Choose between FlatFile (mmap) and LMDB
 - 🚫 **No server or database required**: Pure Python. Runs anywhere (no setup, no infra)
 
