@@ -16,7 +16,7 @@ pip install chronostore
 ## ⚙️ Features
 
 - 🔌 **Pandas-compatible**: Read and write directly from DataFrames or lists of dicts
-- ⚡ **Blazing-fast reads**: Zero-copy access via NumPy with optional memory-mapping or LMDB backend
+- ⚡ **Fast reads**: Zero-copy access via NumPy with optional memory-mapping or LMDB backend
 - 🧠 **Schema-defined layout**: Define your own typed schema for precise control over storage format
 - 📅 **Daily partitioning**: Each day's data is saved to a single compact binary file for fast lookups
 - 🔄 **Append-only design**: Ideal for logs, metrics, sensor data, or financial data
@@ -48,17 +48,26 @@ Each `data.bin` is an append-only binary file containing rows packed according t
 
 ```python
 from chronostore import TimeSeriesEngine, TableSchema, ColumnSchema
-from chronostore.backend import FlatFileBackend
+from chronostore.backend import FlatFileBackend, LmdbBackend
 
 schema = TableSchema(columns=[
-    ColumnSchema("timestamp", "q"),
-    ColumnSchema("value", "d"),
+    ColumnSchema("timestamp", "q"), # int64
+    ColumnSchema("value", "d"),     # float64
 ])
-engine = TimeSeriesEngine(backend=FlatFileBackend(schema, "./data_folder"))
+
+# Choose your backend
+backend = FlatFileBackend(schema, "./data_folder")  # Memory-mapped files
+# backend = LmdbBackend(schema, "./data_folder")    # Alternatively: LMDB-backed
+
+# Create engine
+engine = TimeSeriesEngine(backend=backend)
+
+# Append data
 engine.append("Sensor1", "2025-06-14", {"timestamp": 1234567890, "value": 42.0})
+engine.append("Sensor1", "2025-06-14", {"timestamp": 1234567891, "value": 43.0})
 engine.flush()
 
-# Read the last 5 rows from a day
+# Read the last 5 rows from that day
 recent = engine.read("Sensor1", "2025-06-14", start=-5)
 print(recent)
 ```
@@ -74,16 +83,15 @@ Practical examples that mirror real workloads:
 
 ## 🚀 Benchmarks
 
-| Format                         | Append (10M rows) | Read (10M rows) | Filter (> threshold) | Disk usage  |
-|--------------------------------|-------------------|-----------------|----------------------| ----------- |
-| CSV                            | 58.6s             | 7.84s           | ❌                    | 595MB       |
-| Parquet                        | 2.03s             | 0.44s           | 0.30s                | 277MB       |
-| DuckDB                         | 3.33s             | 0.81s           | 0.42s                | 203MB       |
-| Chronostore (flatfile backend) | 0.43s             | 0.24s           | 0.40s                | 305MB       |
-| Chronostore (lmdb backend)     | 0.58s             | 0.52s           | 0.57s                | 305MB       |
-
 > Benchmarked on 10M rows of 4-column float64 data
 
+| Format                         | Append all | Read all | Filter (> threshold) | Disk usage  |
+|--------------------------------|------------|----------|----------------------| ----------- |
+| CSV                            | 58.6s      | 7.84s    | ❌                    | 595MB       |
+| Parquet                        | 2.03s      | 0.44s    | 0.30s                | 277MB       |
+| DuckDB                         | 3.33s      | 0.81s    | 0.42s                | 203MB       |
+| Chronostore (flatfile backend) | 0.43s      | 0.24s    | 0.40s                | 305MB       |
+| Chronostore (lmdb backend)     | 0.58s      | 0.52s    | 0.57s                | 305MB       |
 
 ## 📈 Use Cases
 
