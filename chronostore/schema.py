@@ -1,4 +1,5 @@
 import struct
+import numpy as np
 from dataclasses import dataclass
 from typing import List, Tuple
 from functools import cached_property
@@ -18,20 +19,7 @@ class TableSchema:
 
     @cached_property
     def numpy_dtype(self) -> List[Tuple[str, str]]:
-        fmt_to_dtype = {
-            "q": "int64",
-            "Q": "uint64",
-            "i": "int32",
-            "I": "uint32",
-            "h": "int16",
-            "H": "uint16",
-            "b": "int8",
-            "B": "uint8",
-            "f": "float32",
-            "d": "float64",
-        }
-
-        return [(col.name, fmt_to_dtype[col.fmt]) for col in self.columns]
+        return [(col.name, np.dtype(col.fmt)) for col in self.columns]
 
     @cached_property
     def record_size(self) -> int:

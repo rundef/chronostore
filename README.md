@@ -2,7 +2,6 @@
 
 [![PyPI - Version](https://img.shields.io/pypi/v/chronostore)](https://pypi.org/project/chronostore/)
 [![CI](https://github.com/rundef/chronostore/actions/workflows/ci.yml/badge.svg)](https://github.com/rundef/chronostore/actions/workflows/ci.yml)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/chronostore)](https://pypistats.org/packages/chronostore)
 
 **Chronostore** is a fast, binary time series storage engine for local workloads.
 No server. No database. Just append-only daily files backed by memory-mapping or LMDB, with zero-copy NumPy reads and schema control.
@@ -79,7 +78,6 @@ Practical examples that mirror real workloads:
 - [1M rows read/write →](notebooks/1_million_rows.ipynb)
 - [IoT sensor stream →](notebooks/iot_sensor.ipynb)
 - [Financial tick data storage →](notebooks/financial_tick_data.ipynb)
-- [System logs →](notebooks/logs_events.ipynb)
 
 ## 🚀 Benchmarks
 
