@@ -30,7 +30,6 @@ class LmdbBackend(Backend):
     def _row_key(self, table: str, date_str: str, counter: int) -> bytes:
         return f"{table}:{date_str}:{counter:06d}".encode()
 
-    #@profile
     def read_partition(self, table_name, date_str, start=None, end=None):
         key = f"{table_name}:{date_str}".encode()
         with self.env.begin() as txn:
@@ -42,72 +41,15 @@ class LmdbBackend(Backend):
         sliced = arr[start:end]
         return {name: sliced[name] for name, _ in self.schema.numpy_dtype}
 
-        # prefix = f"{table_name}:{date_str}:".encode()
-        # rows = []
-        #
-        # with self.env.begin() as txn:
-        #     cursor = txn.cursor()
-        #     if cursor.set_range(prefix):
-        #         for key, value in cursor:
-        #             if not key.startswith(prefix):
-        #                 break
-        #             arr = np.frombuffer(value, dtype=self.schema.numpy_dtype)
-        #             rows.append(arr)
-        #
-        # if not rows:
-        #     return {}
-        #
-        # all_data = np.concatenate(rows)
-        # sliced = all_data[start:end]
-        # return {name: sliced[name] for name, _ in self.schema.numpy_dtype}
-
-    #@profile
     def append(
         self,
         table_name: str,
         date_str: str,
         data: Union[Dict[str, Any], List[Dict[str, Any]], pd.DataFrame]
     ) -> None:
-        """
-        key = f"{table_name}:{date_str}".encode()
-        packed = self.pack(data)
-
-        with self.env.begin(write=True) as txn:
-            existing = txn.get(key)
-            txn.put(key, existing + packed if existing else packed)
-        """
-
-        """
-        with self.env.begin(write=True) as txn:
-            counter_key = self._counter_key(table_name, date_str)
-
-            # Lazy-load counter from LMDB if needed
-            if (table_name, date_str) not in self._counters:
-                raw = txn.get(counter_key)
-                self._counters[(table_name, date_str)] = int.from_bytes(raw, "big") if raw else 0
-
-            counter = self._counters[(table_name, date_str)]
-
-            # Batch-pack the entire input
-            packed = self.pack(data)
-            num_rows = len(packed) // self.schema.record_size
-
-            # Slice and write each row
-            for i in range(num_rows):
-                row_bytes = packed[i * self.schema.record_size : (i + 1) * self.schema.record_size]
-                key = self._row_key(table_name, date_str, counter + i)
-                txn.put(key, row_bytes)
-
-            # Update and persist the counter
-            new_counter = counter + num_rows
-            self._counters[(table_name, date_str)] = new_counter
-            txn.put(counter_key, new_counter.to_bytes(8, "big"))
-        """
-
         key = (table_name, date_str)
         self._buffers[key].append(data)
 
-    #@profile
     def read(
         self,
         table_name: str,

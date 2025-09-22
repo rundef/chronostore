@@ -48,6 +48,7 @@ Each `data.bin` is an append-only binary file containing rows packed according t
 ```python
 from chronostore import TimeSeriesEngine, TableSchema, ColumnSchema
 from chronostore.backend import FlatFileBackend, LmdbBackend
+import numpy as np
 
 schema = TableSchema(columns=[
     ColumnSchema("timestamp", "q"), # int64
@@ -64,6 +65,7 @@ engine = TimeSeriesEngine(backend=backend)
 # Append data
 engine.append("Sensor1", "2025-06-14", {"timestamp": 1234567890, "value": 42.0})
 engine.append("Sensor1", "2025-06-14", {"timestamp": 1234567891, "value": 43.0})
+engine.append("Sensor1", "2025-06-14", {"timestamp": 1234567892, "value": np.nan}) # NULL value
 engine.flush()
 
 # Read the last 5 rows from that day
